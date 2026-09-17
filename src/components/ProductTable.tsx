@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { AgGridReact } from 'ag-grid-react';
 import {
   AllCommunityModule,
@@ -25,22 +25,38 @@ const columnDefs: ColDef<Product>[] = [
   { field: 'stock', flex: 1, minWidth: 90 },
 ];
 
+const compactColumnDefs: ColDef<Product>[] = [
+  { field: 'title', headerName: 'Product', flex: 2, minWidth: 130, filter: true },
+  { field: 'price', flex: 1, minWidth: 80, valueFormatter: (p) => `$${Number(p.value).toFixed(2)}` },
+  { field: 'stock', flex: 1, minWidth: 70 },
+];
+
 export default function ProductTable({ data, theme }: RemoteProps) {
+  const [isCompact, setIsCompact] = useState(false);
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 640px)');
+    const updateCompactMode = () => setIsCompact(mediaQuery.matches);
+    updateCompactMode();
+    mediaQuery.addEventListener('change', updateCompactMode);
+    return () => mediaQuery.removeEventListener('change', updateCompactMode);
+  }, []);
+
   const gridTheme = useMemo(() => (theme === 'dark' ? darkTheme : lightTheme), [theme]);
 
   return (
-    <div className="rm-flex rm-flex-col rm-gap-3">
+    <div className="rm-flex rm-min-w-0 rm-flex-col rm-gap-3">
       <p className={`rm-m-0 rm-text-sm ${theme === 'dark' ? 'rm-text-stone-300' : 'rm-text-stone-600'}`}>
         Showing {data.products.length} of {data.total} products
       </p>
       <AgGridReact<Product>
         theme={gridTheme}
         rowData={data.products}
-        columnDefs={columnDefs}
+        columnDefs={isCompact ? compactColumnDefs : columnDefs}
         domLayout="autoHeight"
         pagination
         paginationPageSize={10}
-        paginationPageSizeSelector={[10, 20, 30]}
+        paginationPageSizeSelector={isCompact ? false : [10, 20, 30]}
       />
     </div>
   );

@@ -13,7 +13,7 @@ export default function CategoryPie({ data, theme }: RemoteProps) {
     }, {});
 
     return withChartTheme(theme, {
-      chart: { type: 'pie', height: 440 },
+      chart: { type: 'pie', height: 500 },
       title: { text: undefined },
       tooltip: { pointFormat: '<b>{point.y}</b> products ({point.percentage:.0f}%)' },
       series: [
@@ -21,9 +21,21 @@ export default function CategoryPie({ data, theme }: RemoteProps) {
           type: 'pie',
           name: 'Products',
           innerSize: '55%',
+          size: '90%',
           data: Object.entries(counts).map(([name, y]) => ({ name, y })),
         },
       ],
+      responsive: {
+        rules: [
+          {
+            condition: { maxWidth: 640 },
+            chartOptions: {
+              chart: { height: 520 },
+              plotOptions: { pie: { size: '100%', dataLabels: { distance: 6 } } },
+            },
+          },
+        ],
+      },
     });
   }, [data, theme]);
 
